@@ -112,11 +112,11 @@ func runShowCmd(cmd *cobra.Command, args []string) (err error) {
 
 	switch {
 	case isShowAddr:
-		printKeyAddress(info, bechKeyOut)
+		printKeyAddress(cmd.OutOrStdout(), info, bechKeyOut)
 	case isShowPubKey:
-		printPubKey(info, bechKeyOut)
+		printPubKey(cmd.OutOrStdout(), info, bechKeyOut)
 	default:
-		printKeyInfo(info, bechKeyOut)
+		printKeyInfo(cmd.OutOrStdout(), info, bechKeyOut)
 	}
 
 	if isShowDevice {

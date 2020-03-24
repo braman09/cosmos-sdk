@@ -2,6 +2,7 @@ package keys
 
 import (
 	"fmt"
+	"io"
 	"path/filepath"
 
 	"github.com/99designs/keyring"
@@ -37,7 +38,7 @@ func getLazyKeyBaseFromDir(rootDir string, opts ...keys.KeybaseOption) (keys.Key
 	return keys.New(defaultKeyDBName, filepath.Join(rootDir, "keys"), opts...), nil
 }
 
-func printKeyInfo(keyInfo keys.Info, bechKeyOut bechKeyOutFn) {
+func printKeyInfo(w io.Writer, keyInfo keys.Info, bechKeyOut bechKeyOutFn) {
 	ko, err := bechKeyOut(keyInfo)
 	if err != nil {
 		panic(err)
@@ -45,7 +46,7 @@ func printKeyInfo(keyInfo keys.Info, bechKeyOut bechKeyOutFn) {
 
 	switch viper.Get(cli.OutputFlag) {
 	case OutputFormatText:
-		printTextInfos([]keys.KeyOutput{ko})
+		printTextInfos(w, []keys.KeyOutput{ko})
 
 	case OutputFormatJSON:
 		var out []byte
@@ -59,11 +60,11 @@ func printKeyInfo(keyInfo keys.Info, bechKeyOut bechKeyOutFn) {
 			panic(err)
 		}
 
-		fmt.Println(string(out))
+		fmt.Fprintln(w, string(out))
 	}
 }
 
-func printInfos(infos []keys.Info) {
+func printInfos(w io.Writer, infos []keys.Info) {
 	kos, err := keys.Bech32KeysOutput(infos)
 	if err != nil {
 		panic(err)
@@ -71,7 +72,7 @@ func printInfos(infos []keys.Info) {
 
 	switch viper.Get(cli.OutputFlag) {
 	case OutputFormatText:
-		printTextInfos(kos)
+		printTextInfos(w, kos)
 
 	case OutputFormatJSON:
 		var out []byte
@@ -86,34 +87,34 @@ func printInfos(infos []keys.Info) {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("%s", out)
+		fmt.Fprintf(w, "%s", out)
 	}
 }
 
-func printTextInfos(kos []keys.KeyOutput) {
+func printTextInfos(w io.Writer, kos []keys.KeyOutput) {
 	out, err := yaml.Marshal(&kos)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(string(out))
+	fmt.Fprintln(w, string(out))
 }
 
-func printKeyAddress(info keys.Info, bechKeyOut bechKeyOutFn) {
+func printKeyAddress(w io.Writer, info keys.Info, bechKeyOut bechKeyOutFn) {
 	ko, err := bechKeyOut(info)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(ko.Address)
+	fmt.Fprintln(w, ko.Address)
 }
 
-func printPubKey(info keys.Info, bechKeyOut bechKeyOutFn) {
+func printPubKey(w io.Writer, info keys.Info, bechKeyOut bechKeyOutFn) {
 	ko, err := bechKeyOut(info)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(ko.PubKey)
+	fmt.Fprintln(w, ko.PubKey)
 }
 
 func isRunningUnattended() bool {
