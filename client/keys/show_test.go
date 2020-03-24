@@ -78,7 +78,13 @@ func Test_runShowCmd(t *testing.T) {
 	if runningUnattended {
 		mockIn.Reset("testpass1\n")
 	}
+
+	// try fetch by name
 	require.NoError(t, runShowCmd(cmd, []string{fakeKeyName1}))
+	// try fetch by addr
+	info, err := kb.Get(fakeKeyName1)
+	require.NoError(t, err)
+	require.NoError(t, runShowCmd(cmd, []string{info.GetAddress().String()}))
 
 	// Now try multisig key - set bech to acc
 	viper.Set(FlagBechPrefix, sdk.PrefixAccount)
