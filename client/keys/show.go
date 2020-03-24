@@ -64,14 +64,14 @@ func runShowCmd(cmd *cobra.Command, args []string) (err error) {
 	if len(args) == 1 {
 		info, err = fetchKey(kb, args[0])
 		if err != nil {
-			return fmt.Errorf("not a valid name or address: %v", err)
+			return fmt.Errorf("%s is not a valid name or address: %v", args[0], err)
 		}
 	} else {
 		pks := make([]tmcrypto.PubKey, len(args))
 		for i, keyref := range args {
 			info, err := fetchKey(kb, keyref)
 			if err != nil {
-				return err
+				return fmt.Errorf("%s is not a valid name or address: %v", keyref, err)
 			}
 
 			pks[i] = info.GetPubKey()
@@ -147,11 +147,12 @@ func fetchKey(kb keys.Keybase, keyref string) (keys.Info, error) {
 	if err != nil {
 		accAddr, err := sdk.AccAddressFromBech32(keyref)
 		if err != nil {
-			return info, fmt.Errorf("not a valid name or address: %v", err)
+			return info, err
 		}
-		return kb.GetByAddress(accAddr)
+
+		info, err = kb.GetByAddress(accAddr)
 		if err != nil {
-			return info, fmt.Errorf("couldn't find key by either name or address: %v", err)
+			return info, errors.New("key not found")
 		}
 	}
 	return info, nil
